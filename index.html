@@ -66,12 +66,15 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<<<<<<< HEAD
     <!-- sql.js (versión WebAssembly) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
     <!-- sql.js (versión WebAssembly) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
+=======
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
     <!-- Leaflet Measure JS -->
     <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
 
@@ -79,6 +82,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
 
     <script>
+<<<<<<< HEAD
         // Alerta si se abre desde file://
         if (window.location.protocol === 'file:') {
             var warnDiv = document.createElement('div');
@@ -177,6 +181,8 @@
             }
         });
 
+=======
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         // Inicializar el mapa
         var map = L.map('map', {
             zoomControl: false 
@@ -218,7 +224,20 @@
             }
         });
         
+<<<<<<< HEAD
         var mbtilesContainer = L.layerGroup();
+=======
+        // 3. Capa del mosaico extraído (leyendo directamente desde la carpeta tiles/)
+        // Esto elimina por completo la necesidad del archivo Quebpanteon.mbtiles y sql.js
+        var mbtilesLayer = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
+            minZoom: 12,
+            maxZoom: 22,
+            maxNativeZoom: 22,
+            tms: false, // Ya convertimos las coordenadas Y en el script de extracción
+            zIndex: 10,
+            bounds: [[10.6321, -85.4414], [10.6444, -85.4295]] // Limitar las peticiones a la zona de las fotos
+        });
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
 
         // Grupos de capas para el menú
         var baseMaps = {
@@ -228,21 +247,35 @@
 
         var overlayMaps = {
             "Río (GeoJSON)": geojsonLayer,
+<<<<<<< HEAD
             "Mosaico de fotos (MBTiles)": mbtilesContainer
+=======
+            "Mosaico de fotos": mbtilesLayer
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         };
 
         // Añadir por defecto
         osmStandard.addTo(map);
         geojsonLayer.addTo(map);
+<<<<<<< HEAD
         mbtilesContainer.addTo(map);
 
         // 3. Control de capas (arriba a la derecha, colapsado)
+=======
+        mbtilesLayer.addTo(map);
+
+        // 4. Control de capas (arriba a la derecha, colapsado)
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         var layerControl = L.control.layers(baseMaps, overlayMaps, {
             position: 'topright',
             collapsed: true
         }).addTo(map);
 
+<<<<<<< HEAD
         // 4. Cargar archivo GeoJSON
+=======
+        // 5. Cargar archivo GeoJSON
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         fetch('Quebpanteon.geojson')
             .then(response => {
                 if (!response.ok) throw new Error("Error cargando GeoJSON");
@@ -254,6 +287,7 @@
             })
             .catch(error => console.error('Error al cargar el archivo GeoJSON:', error));
 
+<<<<<<< HEAD
         // 5. Cargar archivo MBTiles
         initSqlJs({
             locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
@@ -280,6 +314,8 @@
 
         }).catch(err => console.error("Error inicializando sql.js:", err));
 
+=======
+>>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
     </script>
 </body>
 </html>
