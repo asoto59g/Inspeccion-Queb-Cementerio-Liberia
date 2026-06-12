@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liberia Quebrada Cementerio 10jun2026</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Measure CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.css" />
+    
+    <!-- Leaflet Locate CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.css" />
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Título central superior */
+        .map-title {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            pointer-events: none; /* Permite interactuar con el mapa a través del cuadro si es necesario */
+        }
+        .map-title h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .map-title h2 {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #555;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="map-title">
+        <h1>Liberia Quebrada Cementerio 10jun2026</h1>
+        <h2>58 fotos aprox georeferenciadas con 22 min vuelo</h2>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- sql.js (versión WebAssembly) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+
+    <!-- sql.js (versión WebAssembly) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+
+    <!-- Leaflet Measure JS -->
+    <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
+
+    <!-- Leaflet Locate JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+
+    <script>
+        // Alerta si se abre desde file://
+        if (window.location.protocol === 'file:') {
+            var warnDiv = document.createElement('div');
+            warnDiv.style.position = 'absolute';
+            warnDiv.style.top = '80px';
+            warnDiv.style.left = '50%';
+            warnDiv.style.transform = 'translateX(-50%)';
+            warnDiv.style.zIndex = '9999';
+            warnDiv.style.backgroundColor = '#ffebee';
+            warnDiv.style.color = '#c62828';
+            warnDiv.style.padding = '15px';
+            warnDiv.style.border = '2px solid #c62828';
+            warnDiv.style.borderRadius = '5px';
+            warnDiv.style.textAlign = 'center';
+            warnDiv.style.fontWeight = 'bold';
+            warnDiv.innerHTML = 'ERROR DE SEGURIDAD:<br>No puedes abrir este archivo dando doble clic (file://).<br>El GeoJSON y el MBTiles no cargarán por seguridad del navegador.<br>Debes usar un servidor local (ej. python -m http.server o Live Server en VS Code).';
+            document.body.appendChild(warnDiv);
+        }
+
+        // --- Implementación de Leaflet MBTiles nativa ---
+        L.TileLayer.MBTiles = L.TileLayer.extend({
+            initialize: function (url, options) {
+                this.mbTilesUrl = url;
+                L.Util.setOptions(this, options);
+                var self = this;
+                
+                // Inicializar base de datos
+                if (options.db) {
+                    this.db = options.db;
+                    this._loadMetadata();
+                }
+            },
+            
+            _loadMetadata: function() {
+                try {
+                    var stmt = this.db.prepare("SELECT value FROM metadata WHERE name = 'maxzoom'");
+                    if (stmt.step()) this.options.maxNativeZoom = parseInt(stmt.getAsObject().value);
+                    stmt.free();
+                    
+                    var stmt2 = this.db.prepare("SELECT value FROM metadata WHERE name = 'minzoom'");
+                    if (stmt2.step()) this.options.minNativeZoom = parseInt(stmt2.getAsObject().value);
+                    stmt2.free();
+                    
+                    var stmt3 = this.db.prepare("SELECT value FROM metadata WHERE name = 'format'");
+                    if (stmt3.step()) this.format = stmt3.getAsObject().value;
+                    stmt3.free();
+                } catch (e) {
+                    console.warn("No se pudo leer la metadata de zoom del MBTiles", e);
+                }
+                this.fire('databaseloaded');
+                this.redraw();
+            },
+
+            createTile: function (coords, done) {
+                var tile = document.createElement('img');
+                
+                // Eventos obligatorios de Leaflet para mostrar la imagen y quitar opacidad 0
+                L.DomEvent.on(tile, 'load', L.bind(this._tileOnLoad, this, done, tile));
+                L.DomEvent.on(tile, 'error', L.bind(this._tileOnError, this, done, tile));
+
+                if (this.options.crossOrigin || this.options.crossOrigin === '') {
+                    tile.crossOrigin = this.options.crossOrigin === true ? '' : this.options.crossOrigin;
+                }
+                
+                tile.alt = '';
+                tile.setAttribute('role', 'presentation');
+
+                if (!this.db) {
+                    setTimeout(() => done('DB not loaded', tile), 0);
+                    return tile;
+                }
+
+                var z = coords.z;
+                var x = coords.x;
+                // MBTiles usa formato TMS (la coordenada Y está invertida)
+                var y = Math.pow(2, z) - 1 - coords.y;
+
+                try {
+                    var stmt = this.db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
+                    var data = stmt.getAsObject({':z': z, ':x': x, ':y': y});
+                    stmt.free();
+
+                    if (data && data.tile_data) {
+                        var format = this.format || 'png';
+                        var mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
+                        var blob = new Blob([data.tile_data], {type: mime});
+                        tile.src = URL.createObjectURL(blob);
+                    } else {
+                        // Imagen vacía transparente si no hay tile (para evitar borde roto)
+                        tile.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                    }
+                } catch(e) {
+                    setTimeout(() => done(e, tile), 0);
+                }
+                return tile;
+            }
+        });
+
+        // Inicializar el mapa
+        var map = L.map('map', {
+            zoomControl: false 
+        }).setView([10.63, -85.44], 14);
+
+        // 1. Botones en lado izquierdo superior
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+
+        L.control.locate({
+            position: 'topleft',
+            strings: { title: "Mostrar mi ubicación" }
+        }).addTo(map);
+
+        // 2. Capas Base
+        var osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        });
+
+        var googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+            maxZoom: 22,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '© Google'
+        });
+
+        // Capas Overlay vacías inicialmente para que aparezcan en el control siempre
+        var geojsonLayer = L.geoJSON(null, {
+            style: function (feature) {
+                return { color: "#ff0000", weight: 3, opacity: 0.8 };
+            }
+        });
+        
+        var mbtilesContainer = L.layerGroup();
+
+        // Grupos de capas para el menú
+        var baseMaps = {
+            "OSM Standard": osmStandard,
+            "Google Hybrid": googleHybrid
+        };
+
+        var overlayMaps = {
+            "Río (GeoJSON)": geojsonLayer,
+            "Mosaico de fotos (MBTiles)": mbtilesContainer
+        };
+
+        // Añadir por defecto
+        osmStandard.addTo(map);
+        geojsonLayer.addTo(map);
+        mbtilesContainer.addTo(map);
+
+        // 3. Control de capas (arriba a la derecha, colapsado)
+        var layerControl = L.control.layers(baseMaps, overlayMaps, {
+            position: 'topright',
+            collapsed: true
+        }).addTo(map);
+
+        // 4. Cargar archivo GeoJSON
+        fetch('Quebpanteon.geojson')
+            .then(response => {
+                if (!response.ok) throw new Error("Error cargando GeoJSON");
+                return response.json();
+            })
+            .then(data => {
+                geojsonLayer.addData(data);
+                map.fitBounds(geojsonLayer.getBounds());
+            })
+            .catch(error => console.error('Error al cargar el archivo GeoJSON:', error));
+
+        // 5. Cargar archivo MBTiles
+        initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        }).then(function(SQL) {
+            fetch('Quebpanteon.mbtiles')
+                .then(response => {
+                    if (!response.ok) throw new Error("No se pudo cargar el archivo MBTiles");
+                    return response.arrayBuffer();
+                })
+                .then(buffer => {
+                    var db = new SQL.Database(new Uint8Array(buffer));
+                    
+                    var mbtilesLayer = new L.TileLayer.MBTiles('Quebpanteon.mbtiles', {
+                        db: db,
+                        minZoom: 12,
+                        maxZoom: 22,
+                        zIndex: 10
+                    });
+
+                    mbtilesContainer.addLayer(mbtilesLayer);
+                    console.log('MBTiles cargado exitosamente');
+                })
+                .catch(err => console.error("Error cargando buffer del MBTiles:", err));
+
+        }).catch(err => console.error("Error inicializando sql.js:", err));
+
+    </script>
+</body>
+</html>
