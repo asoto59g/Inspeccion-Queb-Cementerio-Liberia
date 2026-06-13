@@ -133,14 +133,20 @@
         });
         
         // 3. Capa del mosaico extraído (leyendo directamente desde la carpeta tiles/)
-        // Esto elimina por completo la necesidad del archivo Quebpanteon.mbtiles y sql.js
+        // Pane personalizado con modo de mezcla "multiply":
+        // Los píxeles blancos/claros del fondo JPG se vuelven transparentes,
+        // dejando ver solo el contenido real de las fotos del dron.
+        map.createPane('dronePane');
+        map.getPane('dronePane').style.mixBlendMode = 'multiply';
+        map.getPane('dronePane').style.zIndex = 450;
+
         var mbtilesLayer = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
+            pane: 'dronePane',
             minZoom: 10,
             maxZoom: 22,
             maxNativeZoom: 22,
-            tms: false, // Ya convertimos las coordenadas Y en el script de extracción
-            zIndex: 10,
-            bounds: [[10.6321, -85.4414], [10.6444, -85.4295]] // Limitar las peticiones a la zona de las fotos
+            tms: false,
+            bounds: [[10.6321, -85.4414], [10.6444, -85.4295]]
         });
 
         // Grupos de capas para el menú
