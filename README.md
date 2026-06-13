@@ -67,8 +67,8 @@ python fullorthorect.py --input fotos/ --output salida/
 
 Con las fotos georeferenciadas se puede usar **OpenDroneMap (WebODM)**, **Agisoft Metashape** u otro software de fotogrametría para:
 
-1. Reconstruir la nube de puntos 3D.
-2. Generar el **modelo digital de superficie (DSM)**.
+1. No es posible reconstruir la nube de puntos 3D porque las fotos no tienen el traslape requerido.
+2. Tampoco generar el **modelo digital de superficie (DSM)** por la misma razon.
 3. Exportar el **ortomosaico** en formato GeoTIFF (`.tif`) con proyección geográfica.
 
 **Parámetros de exportación recomendados:**
