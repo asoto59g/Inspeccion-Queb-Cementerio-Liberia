@@ -137,7 +137,7 @@
         // Los píxeles blancos/claros del fondo JPG se vuelven transparentes,
         // dejando ver solo el contenido real de las fotos del dron.
         map.createPane('dronePane');
-        map.getPane('dronePane').style.mixBlendMode = 'multiply';
+        map.getPane('dronePane').style.mixBlendMode = 'darken';
         map.getPane('dronePane').style.zIndex = 450;
 
         var mbtilesLayer = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
