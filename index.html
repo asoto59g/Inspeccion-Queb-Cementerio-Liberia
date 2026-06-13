@@ -117,7 +117,7 @@
         // 3. Capa del mosaico extraído (leyendo directamente desde la carpeta tiles/)
         // Esto elimina por completo la necesidad del archivo Quebpanteon.mbtiles y sql.js
         var mbtilesLayer = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
-            minZoom: 12,
+            minZoom: 10,
             maxZoom: 22,
             maxNativeZoom: 22,
             tms: false, // Ya convertimos las coordenadas Y en el script de extracción
