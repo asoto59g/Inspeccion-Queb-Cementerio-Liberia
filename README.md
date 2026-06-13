@@ -11,14 +11,32 @@ Visor web de inspección aérea de la Quebrada Cementerio, Liberia, Costa Rica.
 
 ### 1. Captura con dron
 
-- **Equipo:** Dron con cámara de resolución suficiente para fotogrametría (ej. DJI Mini / Mavic / Phantom).
-- **Patrón de vuelo:** Cuadrícula (grid) sobre el cauce y riberas de la quebrada con superposición lateral y frontal mínima del **75 %** para asegurar buena cobertura para la reconstrucción fotogramétrica.
-- **Altura de vuelo:** Definida según la resolución de suelo (GSD) deseada. A menor altura, mayor resolución.
-- **Parámetros recomendados:**
-  - Superposición frontal: 80 %
-  - Superposición lateral: 75 %
-  - Velocidad: automática según la app de vuelo
-- **Resultado:** Carpeta de fotos JPG con datos GPS EXIF embebidos en cada imagen.
+La metodología de captura es **manual y secuencial a lo largo del cauce**, no una cuadrícula automatizada.
+
+**Procedimiento paso a paso:**
+
+1. **Foto de referencia en el punto de despegue:** Antes de iniciar el recorrido se toma una fotografía con el dron en el punto de despegue. Esta foto sirve como referencia de posición inicial para el script de georeferenciación.
+
+2. **Vuelo al cauce:** El dron se desplaza hasta el inicio del tramo del cauce que se desea inspeccionar.
+
+3. **Posicionamiento y captura:**
+   - El dron se orienta apuntando al **Norte**.
+   - La cámara se posiciona mirando **completamente hacia abajo (nadir, 90°)**.
+   - Se asciende a **75 metros de altura** sobre el terreno.
+   - Se toma la fotografía.
+
+4. **Avance aguas abajo:** El dron se desplaza aproximadamente **60 metros aguas abajo** siguiendo el cauce del río.
+
+5. **Repetición:** Se repiten los pasos 3 y 4 en cada nueva posición hasta cubrir todo el tramo de cauce de interés.
+
+6. **Resultado:** Secuencia de fotos JPG donde cada imagen tiene:
+   - Coordenadas GPS (latitud, longitud, altitud) grabadas en los metadatos EXIF.
+   - Orientación constante hacia el Norte.
+   - Vista cenital del cauce desde 75 m de altura.
+   - Separación aproximada de 60 m entre punto y punto.
+
+> **Ventaja de este método:** No requiere planificación de vuelo automatizado ni superposición de imágenes. Cada foto cubre un segmento independiente del cauce con mínima redundancia.
+
 
 ---
 
