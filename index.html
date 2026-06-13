@@ -66,15 +66,6 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<<<<<<< HEAD
-    <!-- sql.js (versión WebAssembly) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-
-    <!-- sql.js (versión WebAssembly) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-
-=======
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
     <!-- Leaflet Measure JS -->
     <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
 
@@ -82,107 +73,6 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
 
     <script>
-<<<<<<< HEAD
-        // Alerta si se abre desde file://
-        if (window.location.protocol === 'file:') {
-            var warnDiv = document.createElement('div');
-            warnDiv.style.position = 'absolute';
-            warnDiv.style.top = '80px';
-            warnDiv.style.left = '50%';
-            warnDiv.style.transform = 'translateX(-50%)';
-            warnDiv.style.zIndex = '9999';
-            warnDiv.style.backgroundColor = '#ffebee';
-            warnDiv.style.color = '#c62828';
-            warnDiv.style.padding = '15px';
-            warnDiv.style.border = '2px solid #c62828';
-            warnDiv.style.borderRadius = '5px';
-            warnDiv.style.textAlign = 'center';
-            warnDiv.style.fontWeight = 'bold';
-            warnDiv.innerHTML = 'ERROR DE SEGURIDAD:<br>No puedes abrir este archivo dando doble clic (file://).<br>El GeoJSON y el MBTiles no cargarán por seguridad del navegador.<br>Debes usar un servidor local (ej. python -m http.server o Live Server en VS Code).';
-            document.body.appendChild(warnDiv);
-        }
-
-        // --- Implementación de Leaflet MBTiles nativa ---
-        L.TileLayer.MBTiles = L.TileLayer.extend({
-            initialize: function (url, options) {
-                this.mbTilesUrl = url;
-                L.Util.setOptions(this, options);
-                var self = this;
-                
-                // Inicializar base de datos
-                if (options.db) {
-                    this.db = options.db;
-                    this._loadMetadata();
-                }
-            },
-            
-            _loadMetadata: function() {
-                try {
-                    var stmt = this.db.prepare("SELECT value FROM metadata WHERE name = 'maxzoom'");
-                    if (stmt.step()) this.options.maxNativeZoom = parseInt(stmt.getAsObject().value);
-                    stmt.free();
-                    
-                    var stmt2 = this.db.prepare("SELECT value FROM metadata WHERE name = 'minzoom'");
-                    if (stmt2.step()) this.options.minNativeZoom = parseInt(stmt2.getAsObject().value);
-                    stmt2.free();
-                    
-                    var stmt3 = this.db.prepare("SELECT value FROM metadata WHERE name = 'format'");
-                    if (stmt3.step()) this.format = stmt3.getAsObject().value;
-                    stmt3.free();
-                } catch (e) {
-                    console.warn("No se pudo leer la metadata de zoom del MBTiles", e);
-                }
-                this.fire('databaseloaded');
-                this.redraw();
-            },
-
-            createTile: function (coords, done) {
-                var tile = document.createElement('img');
-                
-                // Eventos obligatorios de Leaflet para mostrar la imagen y quitar opacidad 0
-                L.DomEvent.on(tile, 'load', L.bind(this._tileOnLoad, this, done, tile));
-                L.DomEvent.on(tile, 'error', L.bind(this._tileOnError, this, done, tile));
-
-                if (this.options.crossOrigin || this.options.crossOrigin === '') {
-                    tile.crossOrigin = this.options.crossOrigin === true ? '' : this.options.crossOrigin;
-                }
-                
-                tile.alt = '';
-                tile.setAttribute('role', 'presentation');
-
-                if (!this.db) {
-                    setTimeout(() => done('DB not loaded', tile), 0);
-                    return tile;
-                }
-
-                var z = coords.z;
-                var x = coords.x;
-                // MBTiles usa formato TMS (la coordenada Y está invertida)
-                var y = Math.pow(2, z) - 1 - coords.y;
-
-                try {
-                    var stmt = this.db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
-                    var data = stmt.getAsObject({':z': z, ':x': x, ':y': y});
-                    stmt.free();
-
-                    if (data && data.tile_data) {
-                        var format = this.format || 'png';
-                        var mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
-                        var blob = new Blob([data.tile_data], {type: mime});
-                        tile.src = URL.createObjectURL(blob);
-                    } else {
-                        // Imagen vacía transparente si no hay tile (para evitar borde roto)
-                        tile.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                    }
-                } catch(e) {
-                    setTimeout(() => done(e, tile), 0);
-                }
-                return tile;
-            }
-        });
-
-=======
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         // Inicializar el mapa
         var map = L.map('map', {
             zoomControl: false 
@@ -224,9 +114,6 @@
             }
         });
         
-<<<<<<< HEAD
-        var mbtilesContainer = L.layerGroup();
-=======
         // 3. Capa del mosaico extraído (leyendo directamente desde la carpeta tiles/)
         // Esto elimina por completo la necesidad del archivo Quebpanteon.mbtiles y sql.js
         var mbtilesLayer = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
@@ -237,7 +124,6 @@
             zIndex: 10,
             bounds: [[10.6321, -85.4414], [10.6444, -85.4295]] // Limitar las peticiones a la zona de las fotos
         });
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
 
         // Grupos de capas para el menú
         var baseMaps = {
@@ -247,35 +133,21 @@
 
         var overlayMaps = {
             "Río (GeoJSON)": geojsonLayer,
-<<<<<<< HEAD
-            "Mosaico de fotos (MBTiles)": mbtilesContainer
-=======
             "Mosaico de fotos": mbtilesLayer
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         };
 
         // Añadir por defecto
         osmStandard.addTo(map);
         geojsonLayer.addTo(map);
-<<<<<<< HEAD
-        mbtilesContainer.addTo(map);
-
-        // 3. Control de capas (arriba a la derecha, colapsado)
-=======
         mbtilesLayer.addTo(map);
 
         // 4. Control de capas (arriba a la derecha, colapsado)
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         var layerControl = L.control.layers(baseMaps, overlayMaps, {
             position: 'topright',
             collapsed: true
         }).addTo(map);
 
-<<<<<<< HEAD
-        // 4. Cargar archivo GeoJSON
-=======
         // 5. Cargar archivo GeoJSON
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
         fetch('Quebpanteon.geojson')
             .then(response => {
                 if (!response.ok) throw new Error("Error cargando GeoJSON");
@@ -287,35 +159,6 @@
             })
             .catch(error => console.error('Error al cargar el archivo GeoJSON:', error));
 
-<<<<<<< HEAD
-        // 5. Cargar archivo MBTiles
-        initSqlJs({
-            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-        }).then(function(SQL) {
-            fetch('Quebpanteon.mbtiles')
-                .then(response => {
-                    if (!response.ok) throw new Error("No se pudo cargar el archivo MBTiles");
-                    return response.arrayBuffer();
-                })
-                .then(buffer => {
-                    var db = new SQL.Database(new Uint8Array(buffer));
-                    
-                    var mbtilesLayer = new L.TileLayer.MBTiles('Quebpanteon.mbtiles', {
-                        db: db,
-                        minZoom: 12,
-                        maxZoom: 22,
-                        zIndex: 10
-                    });
-
-                    mbtilesContainer.addLayer(mbtilesLayer);
-                    console.log('MBTiles cargado exitosamente');
-                })
-                .catch(err => console.error("Error cargando buffer del MBTiles:", err));
-
-        }).catch(err => console.error("Error inicializando sql.js:", err));
-
-=======
->>>>>>> 5692d12c (Agregar visor de mapa e imagenes del dron)
     </script>
 </body>
 </html>
